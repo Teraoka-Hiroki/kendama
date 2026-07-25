@@ -52,13 +52,16 @@ python -m http.server 8000
 ```
 ブラウザで [http://localhost:8000](http://localhost:8000) へアクセスしてください。
 
-### 2. Vercel でのデプロイ
-Vercel へのデプロイが前提として設計されており、`vercel.json` が同梱されています。
-- Vercel CLI を使う場合：
-  ```bash
-  npx vercel --prod
-  ```
-- GitHub 連携を使う場合：本リポジトリを接続するだけで自動的に静的サイトとしてビルド・デプロイされます。
+### 2. GitHub Pages での公開
+本アプリは **GitHub Pages** にて公開されています。
+
+- 公開 URL：[https://teraoka-hiroki.github.io/kendama/](https://teraoka-hiroki.github.io/kendama/)
+- `main` ブランチのルートディレクトリに `index.html` が置かれており、GitHub Pages の設定で自動的に静的サイトとして配信されます。
+
+リポジトリを fork した場合は、以下の手順で GitHub Pages を有効にしてください：
+1. リポジトリの **Settings** → **Pages** を開く
+2. **Source** を `Deploy from a branch` に設定
+3. **Branch** を `main`、フォルダを `/ (root)` に設定して保存
 
 ---
 
@@ -69,7 +72,6 @@ kendama/
 ├── index.html       # メイン画面（統一シングルページレイアウト）
 ├── styles.css       # デザインシステム・スクロール補正・アニメーションスタイル
 ├── app.js           # 物理エンジン・Web Audio / Speech 音声・localStorage 管理
-├── vercel.json      # Vercel 静的デプロイ設定
 ├── teraoka.png      # テラオカ電子ゼミ プロフィールアイコン
 └── README.md        # 本ドキュメント
 ```
