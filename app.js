@@ -90,7 +90,7 @@ const modeDescriptions = {
   }
 };
 
-// ================= INITIALIZATION & VERCEL SAFE RECOVERY =================
+// ================= INITIALIZATION =================
 let isAppInitialized = false;
 
 function initApp() {
@@ -104,14 +104,12 @@ function initApp() {
   requestAnimationFrame(animate);
 }
 
-// 多重バックアップ初期化フック（Vercel CDNでのDOM遅延対策）
-if (document.readyState === 'interactive' || document.readyState === 'complete') {
-  initApp();
-} else {
-  window.addEventListener('DOMContentLoaded', initApp);
-  window.addEventListener('load', initApp);
-}
-setTimeout(initApp, 300);
+// window.load でレイアウト完了後に確実に起動
+window.addEventListener('load', initApp);
+// フォールバック: DOMContentLoaded でも起動
+window.addEventListener('DOMContentLoaded', initApp);
+// 最終フォールバック: 500ms 後に強制起動
+setTimeout(initApp, 500);
 
 function loadCompletedSteps() {
   try {
@@ -220,12 +218,21 @@ function initCanvas() {
 
 function resizeCanvas() {
   if (!canvas) return;
-  const rect = canvas.getBoundingClientRect();
-  if (rect.width > 0 && rect.height > 0) {
-    canvas.width = rect.width * (window.devicePixelRatio || 1);
-    canvas.height = rect.height * (window.devicePixelRatio || 1);
-    ctx.scale(window.devicePixelRatio || 1, window.devicePixelRatio || 1);
+  const dpr = window.devicePixelRatio || 1;
+  // getBoundingClientRect がゼロの場合は親要素またはデフォルト値を使う
+  let cssW = canvas.clientWidth || canvas.parentElement?.clientWidth || 640;
+  let cssH = canvas.clientHeight || canvas.parentElement?.clientHeight || 360;
+  // clientWidth も 0 の場合はウィンドウ幅から計算
+  if (cssW < 10) {
+    cssW = Math.min(window.innerWidth - 32, 960);
+    cssH = Math.round(cssW * 9 / 16);
   }
+  canvas.width  = cssW * dpr;
+  canvas.height = cssH * dpr;
+  ctx.scale(dpr, dpr);
+  // CSS サイズも明示的に設定（Vercel でレイアウトが遅延する場合の保険）
+  canvas.style.width  = cssW + 'px';
+  canvas.style.height = cssH + 'px';
 }
 
 function scrollToSection(secId) {
@@ -498,8 +505,15 @@ function renderCanvas() {
   }
   if (!canvas || !ctx) return;
 
-  const w = canvas.width / (window.devicePixelRatio || 1);
-  const h = canvas.height / (window.devicePixelRatio || 1);
+  // キャンバスサイズがゼロの場合は再初期化
+  if (canvas.width < 10 || canvas.height < 10) {
+    resizeCanvas();
+  }
+  if (canvas.width < 10) return;
+
+  const dpr = window.devicePixelRatio || 1;
+  const w = canvas.width / dpr;
+  const h = canvas.height / dpr;
 
   ctx.clearRect(0, 0, w, h);
 
