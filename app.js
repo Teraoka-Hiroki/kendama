@@ -1,6 +1,6 @@
 /**
  * けん玉ー１，２，３ Web Application JS Engine
- * Vercel CDN 即時読み込み対応（document.readyState 判定修復 ＆ 堅牢化）
+ * Vercel CDN 完全対応（キャンバス遅延初期化 ＆ 堅牢デュアルリカバリー）
  */
 
 // ================= GLOBAL STATE =================
@@ -16,7 +16,8 @@ const state = {
   completedSteps: new Set()
 };
 
-let canvas, ctx;
+let canvas = null;
+let ctx = null;
 let audioCtx = null;
 
 // 全11ステップの詳細物理解説データ
@@ -89,21 +90,28 @@ const modeDescriptions = {
   }
 };
 
-// ================= INITIALIZATION & VERCEL READYSTATE FIX =================
-if (document.readyState === 'loading') {
-  window.addEventListener('DOMContentLoaded', initApp);
-} else {
-  // 高速CDN/VercelでDOMがすでに準備完了している場合に即時実行
-  initApp();
-}
+// ================= INITIALIZATION & VERCEL SAFE RECOVERY =================
+let isAppInitialized = false;
 
 function initApp() {
+  if (isAppInitialized) return;
+  isAppInitialized = true;
+
   loadCompletedSteps();
   initCanvas();
   initAudio();
   setupEventListeners();
   requestAnimationFrame(animate);
 }
+
+// 多重バックアップ初期化フック（Vercel CDNでのDOM遅延対策）
+if (document.readyState === 'interactive' || document.readyState === 'complete') {
+  initApp();
+} else {
+  window.addEventListener('DOMContentLoaded', initApp);
+  window.addEventListener('load', initApp);
+}
+setTimeout(initApp, 300);
 
 function loadCompletedSteps() {
   try {
@@ -197,7 +205,9 @@ function updateProgressUI() {
     }
   }
 
-  if (window.lucide) lucide.createIcons();
+  if (window.lucide && typeof lucide.createIcons === 'function') {
+    lucide.createIcons();
+  }
 }
 
 function initCanvas() {
@@ -211,9 +221,11 @@ function initCanvas() {
 function resizeCanvas() {
   if (!canvas) return;
   const rect = canvas.getBoundingClientRect();
-  canvas.width = rect.width * (window.devicePixelRatio || 1);
-  canvas.height = rect.height * (window.devicePixelRatio || 1);
-  ctx.scale(window.devicePixelRatio || 1, window.devicePixelRatio || 1);
+  if (rect.width > 0 && rect.height > 0) {
+    canvas.width = rect.width * (window.devicePixelRatio || 1);
+    canvas.height = rect.height * (window.devicePixelRatio || 1);
+    ctx.scale(window.devicePixelRatio || 1, window.devicePixelRatio || 1);
+  }
 }
 
 function scrollToSection(secId) {
@@ -245,7 +257,7 @@ function toggleSound() {
       btnText.textContent = '音声・効果音 OFF';
       icon.setAttribute('data-lucide', 'volume-x');
     }
-    if (window.lucide) lucide.createIcons();
+    if (window.lucide && typeof lucide.createIcons === 'function') lucide.createIcons();
   }
 }
 
@@ -385,7 +397,7 @@ function togglePlay() {
   if (playText && playIcon) {
     playText.textContent = state.isPlaying ? '一時停止' : '再生';
     playIcon.setAttribute('data-lucide', state.isPlaying ? 'pause' : 'play');
-    if (window.lucide) lucide.createIcons();
+    if (window.lucide && typeof lucide.createIcons === 'function') lucide.createIcons();
   }
 }
 
@@ -481,7 +493,11 @@ function animate() {
 }
 
 function renderCanvas() {
+  if (!canvas || !ctx) {
+    initCanvas();
+  }
   if (!canvas || !ctx) return;
+
   const w = canvas.width / (window.devicePixelRatio || 1);
   const h = canvas.height / (window.devicePixelRatio || 1);
 
