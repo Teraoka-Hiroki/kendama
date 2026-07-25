@@ -33,6 +33,9 @@
   
   <!-- Styles -->
   <link rel="stylesheet" href="./styles.css">
+
+  <!-- App Script (defer 読み込みで即時起動保証) -->
+  <script src="./app.js" defer></script>
 </head>
 <body class="bg-[#090d16] text-slate-100 min-h-screen flex flex-col selection:bg-cyan-500 selection:text-white">
 
@@ -81,10 +84,10 @@
         </div>
       </div>
 
-      <!-- 右上ロゴ（指定コードと完全同一） -->
+      <!-- 右上ロゴ（指定コードと完全同一 ＋ Vercel パス確実化） -->
       <!-- プロフィール -->
       <div class="flex items-center mt-4 md:mt-0 bg-slate-900/80 p-3 pr-6 rounded-full border border-slate-700 shadow-xl ml-4 hover:border-cyan-500/50 transition-colors cursor-default">
-          <img src="./teraoka.png" onerror="this.src='https://ui-avatars.com/api/?name=Teraoka&background=0f172a&color=fff'" alt="Profile" class="w-14 h-14 rounded-full object-cover border-2 border-cyan-500/30">
+          <img src="teraoka.png" onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=Teraoka&background=0f172a&color=fff'" alt="Profile" class="w-14 h-14 rounded-full object-cover border-2 border-cyan-500/30">
           <div class="text-right ml-4">
               <p class="font-bold text-sm text-cyan-400">テラオカ電子の自由探究ゼミ</p>
               <p class="text-xs text-gray-400 max-w-[200px] leading-tight mt-1">自分が価値を置くものに向かって<br>こつこつ努力する姿ほど<br>素晴らしいものはない</p>
@@ -837,7 +840,7 @@
           </div>
           <h3 class="font-bold text-base text-white">1 日 5 分〜10 分の分散学習</h3>
           <p class="text-xs text-slate-300 leading-relaxed">
-            休日に一気に 1 時間練習するよりも、<strong>毎日 5〜10 分程度練習して睡眠を挟む方が、記憶の再構成（コンソリデーション）が進み、短期間で体が技を覚えます。</strong>
+            休日に一気に 1 時間練習するよりも、<strong>毎日 5〜10 分程度練習して睡眠を挟む方が、記憶の再構成（コンソリデーション）が進み、短期間で体が覚えます。</strong>
           </p>
         </div>
 
@@ -864,9 +867,6 @@
     </div>
   </footer>
 
-  <!-- App Script -->
-  <script src="./app.js"></script>
-  
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       lucide.createIcons();

@@ -1,6 +1,6 @@
 /**
  * けん玉ー１，２，３ Web Application JS Engine
- * 全11ステップ完了リセット機能 ＆ localStorage 永久保存機能
+ * Vercel CDN 即時読み込み対応（document.readyState 判定修復 ＆ 堅牢化）
  */
 
 // ================= GLOBAL STATE =================
@@ -89,14 +89,21 @@ const modeDescriptions = {
   }
 };
 
-// ================= INITIALIZATION & LOCALSTORAGE =================
-window.addEventListener('DOMContentLoaded', () => {
+// ================= INITIALIZATION & VERCEL READYSTATE FIX =================
+if (document.readyState === 'loading') {
+  window.addEventListener('DOMContentLoaded', initApp);
+} else {
+  // 高速CDN/VercelでDOMがすでに準備完了している場合に即時実行
+  initApp();
+}
+
+function initApp() {
   loadCompletedSteps();
   initCanvas();
   initAudio();
   setupEventListeners();
   requestAnimationFrame(animate);
-});
+}
 
 function loadCompletedSteps() {
   try {
@@ -847,7 +854,7 @@ function drawHumanSilhouette(ctx, cx, gy, kneeOff, hx, hy) {
   ctx.beginPath();
   ctx.moveTo(cx, hipY);
   ctx.lineTo(cx - legSpread - kneeOff * 0.2, kneeY);
-  ctx.lineTo(cx - legSpread, gy);
+  ctx.lineTo(cx - legSpread);
   ctx.stroke();
 
   ctx.fillStyle = '#34d399';
