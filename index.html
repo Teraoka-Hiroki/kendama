@@ -60,10 +60,10 @@
   <!-- NAV -->
   <nav class="bg-slate-900/50 border-b border-slate-800 sticky top-[88px] z-40">
     <div class="max-w-7xl mx-auto px-4 flex overflow-x-auto no-scrollbar gap-2 py-2">
-      <button onclick="document.getElementById('sec-anim').scrollIntoView({behavior:'smooth',block:'start'})" class="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold border border-cyan-500/40 text-cyan-300 whitespace-nowrap">▶ 1. 物理シミュレーション</button>
-      <button onclick="document.getElementById('sec-steps').scrollIntoView({behavior:'smooth',block:'start'})" class="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold border border-slate-800 text-slate-300 whitespace-nowrap hover:text-white">☰ 2. 全11ステップ詳細ガイド</button>
-      <button onclick="document.getElementById('sec-rhythm').scrollIntoView({behavior:'smooth',block:'start'})" class="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold border border-slate-800 text-slate-300 whitespace-nowrap hover:text-white">♪ 3. タイミング＆掛け声</button>
-      <button onclick="document.getElementById('sec-science').scrollIntoView({behavior:'smooth',block:'start'})" class="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold border border-slate-800 text-slate-300 whitespace-nowrap hover:text-white">🔬 4. 科学的原理</button>
+      <button onclick="scrollToSection('sec-anim')" class="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold border border-cyan-500/40 text-cyan-300 whitespace-nowrap">▶ 1. 物理シミュレーション</button>
+      <button onclick="scrollToSection('sec-steps')" class="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold border border-slate-800 text-slate-300 whitespace-nowrap hover:text-white">☰ 2. 全11ステップ詳細ガイド</button>
+      <button onclick="scrollToSection('sec-rhythm')" class="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold border border-slate-800 text-slate-300 whitespace-nowrap hover:text-white">♪ 3. タイミング＆掛け声</button>
+      <button onclick="scrollToSection('sec-science')" class="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold border border-slate-800 text-slate-300 whitespace-nowrap hover:text-white">🔬 4. 科学的原理</button>
     </div>
   </nav>
 
@@ -294,7 +294,7 @@ function buildUI() {
             <h3 class="text-base font-bold text-white">${s.title}</h3>
           </div>
           <div class="flex items-center gap-2">
-            <button onclick="selectSimMode('step${s.id}'); document.getElementById('sec-anim').scrollIntoView({behavior:'smooth'});"
+            <button onclick="selectSimMode('step${s.id}'); scrollToSection('sec-anim');"
               class="text-xs font-bold ${c.text} ${c.bg} px-3 py-1.5 rounded-xl border ${c.border} hover:opacity-80 transition-opacity flex items-center gap-1">
               ▶ アニメ表示
             </button>
@@ -409,7 +409,9 @@ function selectSimMode(mode) {
   if (valV) valV.textContent = s.v;
   if (valDt) valDt.textContent = s.dt;
   if (valF) valF.textContent = s.f;
+  // ステップ選択時の音声ガイド：番号 → 少し間を置いてステップの説明
   playVoiceCall('ステップ' + stepId);
+  setTimeout(() => { playVoiceCall(s.desc); }, 1200);
 }
 
 // ===== CANVAS =====
@@ -744,6 +746,16 @@ function playRhythmPattern(pattern) {
     playVoiceCall(ly[i]); playKendamaSound('katsun');
     rhythmTimer = setInterval(() => { i=(i+1)%ly.length; playVoiceCall(ly[i]); playKendamaSound('katsun'); }, 900);
   }
+}
+
+// ===== SCROLL ヘッダー・ナビ分のオフセット補正 =====
+function scrollToSection(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  // sticky header (~60px) + sticky nav (~48px) + 余白 (16px) = 約124px
+  const OFFSET = 130;
+  const top = el.getBoundingClientRect().top + window.scrollY - OFFSET;
+  window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
 }
 
 // ===== KEYBOARD =====
